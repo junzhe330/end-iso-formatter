@@ -13,9 +13,7 @@ export default async function handler(req, res) {
     const start = new Date(start_iso_time);
     start.setMinutes(start.getMinutes() + parseInt(duration));
 
-    const isoString = new Date(start.getTime() - start.getTimezoneOffset() * 60000)
-      .toISOString()
-      .replace('Z', '+08:00');
+    const isoString = start.toISOString().replace('Z', '+08:00');
 
     return res.status(200).json({ end_iso_time: isoString });
   } catch (err) {
