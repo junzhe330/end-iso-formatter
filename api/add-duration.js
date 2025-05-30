@@ -1,8 +1,4 @@
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
-  }
-
+export default function handler(req, res) {
   const { start_iso_time, duration } = req.body;
 
   if (!start_iso_time || !duration) {
@@ -10,12 +6,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    const start = new Date(start_iso_time);
-    start.setMinutes(start.getMinutes() + parseInt(duration));
+    // Parse as native Date
+    const startDate = new Date(start_iso_time);
 
-    const isoString = start.toISOString().replace('Z', '+08:00');
+    if (isNaN(startDate.getTime())) {
+      throw new Error("Invalid start_iso_time format");
+    }
 
-    return res.status(200).json({ end_iso_time: isoString });
+    // Add duration in minutes
+    const endDate = new Date(startDate.getTime() + parseInt(duration) * 60 * 1000);
+
+    // Return in ISO format with original offset preserved
+    const isoEnd = endDate.toISOString().replace('Z', '+08:00');
+
+    return res.status(200).json({ end_iso_time: isoEnd });
+
   } catch (err) {
     return res.status(500).json({ error: "Invalid ISO input or server error" });
   }
