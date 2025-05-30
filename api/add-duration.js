@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 export default function handler(req, res) {
   const { start_iso_time, duration } = req.body;
 
@@ -6,31 +8,21 @@ export default function handler(req, res) {
   }
 
   try {
-    const startDate = new Date(start_iso_time);
+    // Parse the ISO string with timezone using Luxon
+    const start = DateTime.fromISO(start_iso_time, { setZone: true });
 
-    if (isNaN(startDate)) {
+    if (!start.isValid) {
       return res.status(400).json({ error: "Invalid start_iso_time format" });
     }
 
-    // Save original UTC string before math
-    const originalUTC = startDate.toISOString();
+    const end = start.plus({ minutes: parseInt(duration) });
 
-    // Add duration in minutes
-    startDate.setMinutes(startDate.getMinutes() + parseInt(duration));
+    // Debug logs
+    console.log("Start time:", start.toISO());
+    console.log("Duration (mins):", duration);
+    console.log("End time:", end.toISO());
 
-    // ISO string is in UTC by default
-    const addedUTC = startDate.toISOString();
-
-    // Manually re-apply +08:00 timezone suffix
-    const localPart = addedUTC.slice(0, -1); // remove trailing 'Z'
-    const formattedEnd = `${localPart}+08:00`;
-
-    return res.status(200).json({
-      start_iso_time,
-      original_utc: originalUTC,
-      after_add_utc: addedUTC,
-      end_iso_time: formattedEnd
-    });
+    return res.status(200).json({ end_iso_time: end.toISO() });
   } catch (err) {
     return res.status(500).json({ error: "Server error", details: err.message });
   }
