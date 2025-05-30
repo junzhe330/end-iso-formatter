@@ -6,22 +6,17 @@ export default function handler(req, res) {
   }
 
   try {
-    // Parse as native Date
+    // Create a Date object from the ISO string
     const startDate = new Date(start_iso_time);
 
-    if (isNaN(startDate.getTime())) {
-      throw new Error("Invalid start_iso_time format");
-    }
+    // Add duration (in minutes)
+    const endDate = new Date(startDate.getTime() + parseInt(duration) * 60000);
 
-    // Add duration in minutes
-    const endDate = new Date(startDate.getTime() + parseInt(duration) * 60 * 1000);
+    // Return result in ISO format, keeping the same timezone (+08:00 stays the same visually)
+    const end_iso_time = endDate.toISOString().replace('Z', '+08:00');
 
-    // Return in ISO format with original offset preserved
-    const isoEnd = endDate.toISOString().replace('Z', '+08:00');
-
-    return res.status(200).json({ end_iso_time: isoEnd });
-
+    return res.status(200).json({ end_iso_time });
   } catch (err) {
-    return res.status(500).json({ error: "Invalid ISO input or server error" });
+    return res.status(500).json({ error: "Invalid input or server error" });
   }
 }
