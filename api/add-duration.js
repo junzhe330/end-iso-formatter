@@ -8,22 +8,27 @@ export default function handler(req, res) {
   }
 
   try {
-    // Parse the ISO string with timezone using Luxon
+    // Parse with timezone preserved
     const start = DateTime.fromISO(start_iso_time, { setZone: true });
 
     if (!start.isValid) {
       return res.status(400).json({ error: "Invalid start_iso_time format" });
     }
 
+    // Add duration
     const end = start.plus({ minutes: parseInt(duration) });
 
-    // Debug logs
-    console.log("Start time:", start.toISO());
-    console.log("Duration (mins):", duration);
-    console.log("End time:", end.toISO());
+    // Convert end time to UTC and return
+    const endUTC = end.toUTC().toISO();
 
-    return res.status(200).json({ end_iso_time: end.toISO() });
+    // Debug logs
+    console.log("Start (Local):", start.toISO());
+    console.log("End (Local):", end.toISO());
+    console.log("End (UTC):", endUTC);
+
+    return res.status(200).json({ end_iso_time: endUTC });
   } catch (err) {
     return res.status(500).json({ error: "Server error", details: err.message });
   }
 }
+
