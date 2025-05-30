@@ -6,17 +6,32 @@ export default function handler(req, res) {
   }
 
   try {
-    // Create a Date object from the ISO string
     const startDate = new Date(start_iso_time);
 
-    // Add duration (in minutes)
-    const endDate = new Date(startDate.getTime() + parseInt(duration) * 60000);
+    if (isNaN(startDate)) {
+      return res.status(400).json({ error: "Invalid start_iso_time format" });
+    }
 
-    // Return result in ISO format, keeping the same timezone (+08:00 stays the same visually)
-    const end_iso_time = endDate.toISOString().replace('Z', '+08:00');
+    // Save original UTC string before math
+    const originalUTC = startDate.toISOString();
 
-    return res.status(200).json({ end_iso_time });
+    // Add duration in minutes
+    startDate.setMinutes(startDate.getMinutes() + parseInt(duration));
+
+    // ISO string is in UTC by default
+    const addedUTC = startDate.toISOString();
+
+    // Manually re-apply +08:00 timezone suffix
+    const localPart = addedUTC.slice(0, -1); // remove trailing 'Z'
+    const formattedEnd = `${localPart}+08:00`;
+
+    return res.status(200).json({
+      start_iso_time,
+      original_utc: originalUTC,
+      after_add_utc: addedUTC,
+      end_iso_time: formattedEnd
+    });
   } catch (err) {
-    return res.status(500).json({ error: "Invalid input or server error" });
+    return res.status(500).json({ error: "Server error", details: err.message });
   }
 }
