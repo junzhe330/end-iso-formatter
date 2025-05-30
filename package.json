@@ -1,2 +1,10 @@
-npm init -y
-npm install luxon
+{
+  "name": "end-iso-formatter",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "luxon": "^3.4.3"
+  }
+}
