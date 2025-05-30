@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/add-duration.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/add-duration", "dest": "api/add-duration.js" }
+  ]
+}
